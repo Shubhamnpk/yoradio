@@ -14,6 +14,7 @@ export class BaseRadioSource implements RadioSource {
     this.id = id;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchStations(_filters?: Partial<FilterState>): Promise<RadioStation[]> {
     throw new Error('Method not implemented');
   }

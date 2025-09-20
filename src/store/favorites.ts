@@ -36,7 +36,8 @@ export const useFavoritesStore = create<FavoritesState>()(
       })),
 
       removeFavorite: (stationId) => set((state) => {
-        const { [stationId]: removed, ...rest } = state.stations;
+        const rest = { ...state.stations };
+        delete rest[stationId];
         return { stations: rest };
       }),
 
