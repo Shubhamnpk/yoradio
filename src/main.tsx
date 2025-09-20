@@ -7,15 +7,9 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import App from './App.tsx';
 import './index.css';
 
-// Handle client-side routing for GitHub Pages
-if (window.location.search.startsWith('/?')) {
-  const path = window.location.search.slice(2);
-  window.history.replaceState(null, '', path);
-}
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/yoradio/">
       <ThemeProvider>
         <TooltipProvider>
           <ErrorProvider>
