@@ -32,6 +32,14 @@ export function useFavorites() {
     }
   };
 
+  const getRecentlyPlayed = (limit = 5) => {
+    return Object.values(stations)
+      .filter(station => station.lastPlayedAt)
+      .sort((a, b) => new Date(b.lastPlayedAt!).getTime() - new Date(a.lastPlayedAt!).getTime())
+      .slice(0, limit)
+      .map(station => station.id);
+  };
+
   return {
     favorites: stations,
     addFavorite,
@@ -43,5 +51,6 @@ export function useFavorites() {
     getFavoriteDetails: (stationId: string) => stations[stationId] || null,
     getMostPlayed,
     getRecentlyAdded,
+    getRecentlyPlayed,
   };
 }

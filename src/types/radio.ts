@@ -52,6 +52,7 @@ export type SortOption = 'name' | 'frequency' | 'votes' | 'bitrate';
 export interface FilterState {
   search: string;
   province: number | null;
+  country: string | null;
   sortBy: SortOption;
   language?: string;
   codec?: string;

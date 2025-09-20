@@ -1,5 +1,3 @@
-import { Volume2, VolumeX, SkipBack, SkipForward, Play, Pause } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { VolumeSlider } from './VolumeSlider';
 import { PlaybackControls } from './PlaybackControls';
 import type { RadioStation } from '@/types/radio';

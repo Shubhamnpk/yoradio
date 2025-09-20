@@ -21,3 +21,8 @@ export function calculateSignalStrength(frequency: number | null): number {
   // Higher frequencies typically have shorter range
   return Math.min(1, Math.max(0, 1 - (frequency - 87.5) / 20));
 }
+
+export function isMobile(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 768;
+}

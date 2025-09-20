@@ -1,9 +1,10 @@
-import type { RadioStation } from '@/types/radio';
+import type { RadioStation, FilterState } from '@/types/radio';
 
 export interface RadioSource {
   id: string;
-  fetchStations(): Promise<RadioStation[]>;
+  fetchStations(filters?: Partial<FilterState>): Promise<RadioStation[]>;
   searchStations?(query: string): Promise<RadioStation[]>;
+  fetchCountries?(): Promise<string[]>;
 }
 
 export class BaseRadioSource implements RadioSource {
@@ -13,7 +14,7 @@ export class BaseRadioSource implements RadioSource {
     this.id = id;
   }
 
-  async fetchStations(): Promise<RadioStation[]> {
+  async fetchStations(_filters?: Partial<FilterState>): Promise<RadioStation[]> {
     throw new Error('Method not implemented');
   }
 }

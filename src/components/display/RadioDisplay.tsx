@@ -1,4 +1,4 @@
-import { Volume2, Radio as RadioIcon, Signal, Music2 } from 'lucide-react';
+import { Volume2, Music2 } from 'lucide-react';
 import type { RadioStation } from '@/types/radio';
 import { Card } from '@/components/ui/card';
 import { AudioSpectrum } from './AudioSpectrum';

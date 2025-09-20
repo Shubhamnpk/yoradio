@@ -12,7 +12,6 @@ interface FavoriteButtonProps {
 }
 
 export function FavoriteButton({
-  station,
   isFavorite,
   onToggle,
   className

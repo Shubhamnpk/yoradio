@@ -17,8 +17,8 @@ export const radioSources: RadioSource[] = [
   {
     id: 'radio-browser',
     name: 'Radio Browser (Beta)',
-    url: 'https://de1.api.radio-browser.info/json/stations/bycountry/bangladesh',
-    isDefault: false,
+    url: 'https://de1.api.radio-browser.info/json/stations/bycountry/nepal',
+    isDefault: true,
     description: 'Extended collection from Radio Browser API'
   }
 ];

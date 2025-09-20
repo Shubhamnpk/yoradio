@@ -1,4 +1,3 @@
-import { Signal } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SignalIndicatorProps {

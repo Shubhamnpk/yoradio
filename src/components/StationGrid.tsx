@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { RadioCard } from '@/components/cards/RadioCard';
+import { RadioCardSkeleton } from '@/components/cards/RadioCardSkeleton';
 import type { RadioStation } from '@/types/radio';
 
 interface StationGridProps {
@@ -14,6 +15,8 @@ interface StationGridProps {
   onLoadMore: () => void;
   isFavorite: (station: RadioStation) => boolean;
   onToggleFavorite: (station: RadioStation) => void;
+  loading?: boolean;
+  loadingMore?: boolean;
 }
 
 export function StationGrid({
@@ -26,8 +29,10 @@ export function StationGrid({
   onLoadMore,
   isFavorite,
   onToggleFavorite,
+  loading = false,
+  loadingMore = false,
 }: StationGridProps) {
-  if (stations.length === 0) {
+  if (stations.length === 0 && !loading) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -45,36 +50,40 @@ export function StationGrid({
         <h2 className="text-3xl font-bold text-gradient">
           All Stations
         </h2>
-        <motion.div 
-          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        <motion.div
+          className="grid gap-4 grid-cols-1 lg:grid-cols-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ staggerChildren: 0.1 }}
         >
-          {stations.map((station, index) => (
-            <motion.div
-              key={station.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="card-hover"
-            >
-              <RadioCard
-                station={station}
-                isPlaying={isPlaying}
-                isCurrentStation={currentStation?.id === station.id}
-                onPlay={onPlay}
-                onPause={onPause}
-                isFavorite={isFavorite(station)}
-                onToggleFavorite={() => onToggleFavorite(station)}
-              />
-            </motion.div>
-          ))}
+          {loading
+            ? Array.from({ length: 8 }, (_, index) => (
+                <RadioCardSkeleton key={`skeleton-${index}`} />
+              ))
+            : stations.map((station, index) => (
+                <motion.div
+                  key={station.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="card-hover"
+                >
+                  <RadioCard
+                    station={station}
+                    isPlaying={isPlaying}
+                    isCurrentStation={currentStation?.id === station.id}
+                    onPlay={onPlay}
+                    onPause={onPause}
+                    isFavorite={isFavorite(station)}
+                    onToggleFavorite={() => onToggleFavorite(station)}
+                  />
+                </motion.div>
+              ))}
         </motion.div>
       </div>
       
       {hasMore && (
-        <motion.div 
+        <motion.div
           className="flex justify-center py-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -83,9 +92,17 @@ export function StationGrid({
             variant="outline"
             size="lg"
             onClick={onLoadMore}
+            disabled={loadingMore}
             className="min-w-[200px] glass-morphism hover:bg-background/50"
           >
-            Load More Stations
+            {loadingMore ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                Loading...
+              </div>
+            ) : (
+              'Load More Stations'
+            )}
           </Button>
         </motion.div>
       )}

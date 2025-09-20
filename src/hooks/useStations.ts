@@ -5,25 +5,28 @@ import { useSourceSettings } from '@/hooks/useSourceSettings';
 
 const STATIONS_PER_PAGE = 12;
 
-export function useStations() {
+export function useStations(refreshTrigger?: number) {
+  const { enabledSources, selectedCountry, setSelectedCountry } = useSourceSettings();
+
   const [allStations, setAllStations] = useState<RadioStation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(STATIONS_PER_PAGE);
+  const [countries, setCountries] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     province: null,
-    sortBy: 'name',
+    country: selectedCountry,
+    sortBy: 'name' as const,
   });
 
-  const { enabledSources } = useSourceSettings();
-
-  // Fetch stations when enabled sources change
+  // Fetch stations when enabled sources or country filter change
   useEffect(() => {
     const fetchStations = async () => {
       try {
         setLoading(true);
-        const stations = await radioService.fetchAllStations();
+        const stations = await radioService.fetchAllStations({ country: selectedCountry });
         setAllStations(stations);
         setError(null);
       } catch (err) {
@@ -35,7 +38,7 @@ export function useStations() {
     };
 
     fetchStations();
-  }, [enabledSources]);
+  }, [enabledSources, selectedCountry, refreshTrigger]);
 
   // Filter and sort stations
   const filteredStations = useMemo(() => {
@@ -50,7 +53,11 @@ export function useStations() {
           station.country?.toLowerCase().includes(filters.search.toLowerCase());
 
         const matchesProvince = !filters.province || station.province === filters.province;
-        return matchesSearch && matchesProvince;
+        // For default source stations, treat them as Nepali if they don't have a country field
+        const matchesCountry = !filters.country ||
+          station.country === filters.country ||
+          (filters.country === 'Nepal' && !station.country); // Default source stations are Nepali
+        return matchesSearch && matchesProvince && matchesCountry;
       })
       .sort((a, b) => {
         switch (filters.sortBy) {
@@ -83,12 +90,31 @@ export function useStations() {
     return Array.from(uniqueProvinces).sort((a, b) => a - b);
   }, [allStations]);
 
+  // Fetch countries when enabled sources change
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const fetchedCountries = await radioService.fetchCountries();
+        setCountries(fetchedCountries);
+      } catch (err) {
+        console.error('Error fetching countries:', err);
+      }
+    };
+
+    fetchCountries();
+  }, [enabledSources]);
+
   // Check if there are more stations to load
   const hasMore = visibleStations.length < filteredStations.length;
 
   // Load more stations
   const loadMore = () => {
-    setVisibleCount((prev) => prev + STATIONS_PER_PAGE);
+    setLoadingMore(true);
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + STATIONS_PER_PAGE);
+      setLoadingMore(false);
+    }, 500);
   };
 
   // Reset pagination when filters change
@@ -96,14 +122,23 @@ export function useStations() {
     setVisibleCount(STATIONS_PER_PAGE);
   }, [filters]);
 
+  const handleSetFilters = (newFilters: Partial<FilterState>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    if (newFilters.country !== undefined) {
+      setSelectedCountry(newFilters.country);
+    }
+  };
+
   return {
     stations: visibleStations,
     allStations,
     loading,
+    loadingMore,
     error,
-    filters,
-    setFilters,
+    filters: { ...filters, country: selectedCountry },
+    setFilters: handleSetFilters,
     provinces,
+    countries,
     hasMore,
     loadMore,
   };

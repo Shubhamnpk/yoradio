@@ -1,7 +1,7 @@
 import { DefaultRadioSource } from './sources/default-source';
 import { RadioBrowserSource } from './sources/radio-browser-source';
 import type { RadioSource } from './sources/base';
-import type { RadioStation } from '@/types/radio';
+import type { RadioStation, FilterState } from '@/types/radio';
 import { useSourceSettings } from '@/hooks/useSourceSettings';
 
 export class RadioService {
@@ -21,17 +21,17 @@ export class RadioService {
       .map(([, source]) => source);
   }
 
-  async fetchAllStations(): Promise<RadioStation[]> {
+  async fetchAllStations(filters?: Partial<FilterState>): Promise<RadioStation[]> {
     try {
       const enabledSources = this.getEnabledSources();
-      
+
       if (enabledSources.length === 0) {
         console.warn('No radio sources enabled');
         return [];
       }
 
       const stationsArrays = await Promise.all(
-        enabledSources.map(source => source.fetchStations())
+        enabledSources.map(source => source.fetchStations(filters))
       );
 
       // Merge and deduplicate stations
@@ -57,7 +57,7 @@ export class RadioService {
           }
           // For sources without search, filter locally
           const stations = await source.fetchStations();
-          return stations.filter(station => 
+          return stations.filter(station =>
             station.name.toLowerCase().includes(query.toLowerCase())
           );
         })
@@ -68,6 +68,29 @@ export class RadioService {
       );
     } catch (error) {
       console.error('Error searching stations:', error);
+      return [];
+    }
+  }
+
+  async fetchCountries(): Promise<string[]> {
+    try {
+      const enabledSources = this.getEnabledSources();
+      const countriesArrays = await Promise.all(
+        enabledSources.map(async (source) => {
+          if (source.fetchCountries) {
+            return source.fetchCountries();
+          }
+          return [];
+        })
+      );
+
+      // Merge and deduplicate countries
+      const mergedCountries = countriesArrays.flat();
+      const uniqueCountries = Array.from(new Set(mergedCountries)).sort();
+
+      return uniqueCountries;
+    } catch (error) {
+      console.error('Error fetching countries:', error);
       return [];
     }
   }

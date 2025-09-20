@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { RadioStation } from '@/types/radio';
 import { useError } from '@/components/errors/ErrorProvider';
+import { useRecentlyPlayedStore } from '@/store/recently-played';
+import { useFavorites } from '@/hooks/useFavorites';
 
 export function useAudioPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -8,6 +10,8 @@ export function useAudioPlayer() {
   const [volume, setVolume] = useState(0.7);
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(null);
   const { setError, clearError } = useError();
+  const { addRecentlyPlayed } = useRecentlyPlayedStore();
+  const { updatePlayCount, isFavorite } = useFavorites();
 
   // Initialize audio element with proper settings
   useEffect(() => {
@@ -63,19 +67,27 @@ export function useAudioPlayer() {
       }
 
       audioRef.current.volume = volume;
-      
+
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
         await playPromise;
         setIsPlaying(true);
         clearError();
+
+        // Track recently played station
+        addRecentlyPlayed(station);
+
+        // Update play count if it's a favorite
+        if (isFavorite(station)) {
+          updatePlayCount(station.id);
+        }
       }
     } catch (error) {
       console.error('Error playing audio:', error);
       setError('Failed to play this station. Please try another one.');
       setIsPlaying(false);
     }
-  }, [currentStation, isPlaying, volume, clearError, setError]);
+  }, [currentStation, isPlaying, volume, clearError, setError, addRecentlyPlayed, updatePlayCount, isFavorite]);
 
   const pause = useCallback(() => {
     if (audioRef.current) {
